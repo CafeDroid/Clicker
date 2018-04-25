@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -37,7 +38,6 @@ import static android.content.ContentValues.TAG;
 public class FloatingViewService extends HiddenCameraService {
     private WindowManager mWindowManager;
     private View mFloatingView;
-    private CameraConfig mConfig;
 
     public FloatingViewService() {
     }
@@ -53,19 +53,18 @@ public class FloatingViewService extends HiddenCameraService {
         super.onCreate();
         mFloatingView = LayoutInflater.from(this).inflate(R.layout.floating_button, null);
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+        final WindowManager.LayoutParams params;
+        params=new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
 
-        mConfig = new CameraConfig()
+        CameraConfig mConfig = new CameraConfig()
                 .getBuilder(getApplicationContext())
-                .setCameraFacing(CameraFacing.FRONT_FACING_CAMERA)
+                .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
                 .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
                 .setImageFormat(CameraImageFormat.FORMAT_JPEG)
-                .setImageRotation(CameraRotation.ROTATION_270)
+                .setImageFile(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),System.currentTimeMillis()+".jpeg"))
                 .build();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -114,17 +113,12 @@ public class FloatingViewService extends HiddenCameraService {
                         //The check for Xdiff <10 && YDiff< 10 because sometime elements moves a little while clicking.
                         //So that is click event.
                         if (Xdiff < 10 && Ydiff < 10) {
-                                //When user clicks on the image view of the collapsed layout,
-                                //visibility of the collapsed layout will be changed to "View.GONE"
-                                //and expanded view will become visible.
                             captureImage();
                         }
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        //Calculate the X and Y coordinates of the view.
                         params.x = initialX + (int) (motionEvent.getRawX() - initialTouchX);
                         params.y = initialY + (int) (motionEvent.getRawY() - initialTouchY);
-                        //Update the layout with new X & Y coordinate
                         mWindowManager.updateViewLayout(mFloatingView, params);
                         return true;
                 }
@@ -156,12 +150,3 @@ public class FloatingViewService extends HiddenCameraService {
 
     }
 }
-
-//                    case MotionEvent.ACTION_DOWN:
-//                            //remember the initial position.
-//                            initialX = params.x;
-//                            initialY = params.y;
-//                            //get the touch location
-//                            initialTouchX = motionEvent.getRawX();
-//                            initialTouchY = motionEvent.getRawY();
-//                            return true;
