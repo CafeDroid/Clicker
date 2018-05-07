@@ -59,18 +59,6 @@ public class FloatingViewService extends HiddenCameraService {
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
 
-        CameraConfig mConfig = new CameraConfig()
-                .getBuilder(getApplicationContext())
-                .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
-                .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
-                .setImageFormat(CameraImageFormat.FORMAT_JPEG)
-                .setImageFile(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),System.currentTimeMillis()+".jpeg"))
-                .build();
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        startCamera(mConfig);
 
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 0;
@@ -126,10 +114,28 @@ public class FloatingViewService extends HiddenCameraService {
 
             }
         });
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                captureImage();
+            }
+        });
     }
 
     private void captureImage() {
-        //TODO: Capture image on click
+        //Capture image on click
+        CameraConfig mConfig = new CameraConfig()
+                .getBuilder(getApplicationContext())
+                .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
+                .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
+                .setImageFormat(CameraImageFormat.FORMAT_JPEG)
+                .setImageFile(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),System.currentTimeMillis()+".jpeg"))
+                .build();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        startCamera(mConfig);
         takePicture();
         Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show();
     }
